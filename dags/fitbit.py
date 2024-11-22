@@ -1,4 +1,4 @@
-from datetime import datetime, date
+from datetime import datetime
 from airflow.decorators import dag, task
 from airflow.models import Variable
 from airflow.operators.python import PythonOperator
@@ -6,13 +6,14 @@ import requests
 import json
 import psycopg2
 import fitbit
+import pytz
 
 FITBIT_CLIENT_ID = Variable.get("FITBIT_CLIENT_ID") 
 FITBIT_REFRESH_TOKEN = Variable.get("FITBIT_REFRESH_TOKEN")
 FITBIT_DB_PASSWORD = Variable.get("FITBIT_DB_PASSWORD")
 
 
-@dag(schedule="0 4 * * *", start_date=datetime(2024, 11, 11), catchup=False)
+@dag(schedule="59 4 * * *", start_date=datetime(2024, 11, 11), catchup=False)
 def fitbit_data_pull():
     @task.python(task_id="refresh_access_token")
     def refresh_access_token():        
@@ -43,7 +44,11 @@ def fitbit_data_pull():
             access_token=Variable.get("FITBIT_ACCESS_TOKEN"),
             refresh_token=Variable.get("FITBIT_REFRESH_TOKEN")
         )
-        today = date.today().strftime("%Y-%m-%d")
+        eastern_tz = pytz.timezone('US/Eastern')
+        eastern_time = datetime.now(eastern_tz)
+        today = eastern_time.date().strftime("%Y-%m-%d")
+
+        # today = date.today().strftime("%Y-%m-%d")
 
         # Pull activity data
         activity_data = authd_client.activities(date=today)
