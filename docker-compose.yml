@@ -76,8 +76,6 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - /var/run/docker.sock:/var/run/docker.sock
   user: "${AIRFLOW_UID:-50000}:0"
-  networks:
-    - shared_network
   depends_on: &airflow-common-depends-on
     postgres:
       condition: service_healthy
@@ -90,7 +88,7 @@ services:
       POSTGRES_PASSWORD: airflow
       POSTGRES_DB: airflow
     networks:
-      - shared_network
+      - airflow_default
     volumes:
       - postgres-db-volume:/var/lib/postgresql/data
     healthcheck:
@@ -112,6 +110,9 @@ services:
       retries: 5
       start_period: 30s
     restart: always
+    networks:
+      - shared_network
+      - airflow_default
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -127,6 +128,9 @@ services:
       retries: 5
       start_period: 30s
     restart: always
+    networks:
+      - shared_network
+      - airflow_default
     depends_on:
       <<: *airflow-common-depends-on
       airflow-init:
@@ -193,14 +197,21 @@ services:
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
       _PIP_ADDITIONAL_REQUIREMENTS: ''
     user: "0:0"
+    networks:
+      - airflow_default
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
 
 volumes:
   postgres-db-volume:
 
+
 networks:
   shared_network:
-    name: shared_network
+    name: sleeptracking_shared_network
     external: true
+    driver: bridge
+
+  airflow_default:
+    name: airflow_default
     driver: bridge

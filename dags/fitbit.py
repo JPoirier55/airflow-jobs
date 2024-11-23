@@ -10,8 +10,6 @@ import pytz
 
 FITBIT_CLIENT_ID = Variable.get("FITBIT_CLIENT_ID") 
 FITBIT_REFRESH_TOKEN = Variable.get("FITBIT_REFRESH_TOKEN")
-FITBIT_DB_PASSWORD = Variable.get("FITBIT_DB_PASSWORD")
-
 
 @dag(schedule="59 4 * * *", start_date=datetime(2024, 11, 11), catchup=False)
 def fitbit_data_pull():
