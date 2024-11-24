@@ -14,7 +14,7 @@ with DAG(
         image="sleep-dbt",
         command="dbt run --profiles-dir /app/sleepdbt/sleep/profiles",
         docker_url="unix://var/run/docker.sock", 
-        network_mode="shared_network", 
+        network_mode="sleeptracking_shared_network", 
         auto_remove=True,  
     )
 
