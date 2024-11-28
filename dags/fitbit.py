@@ -11,10 +11,10 @@ import pytz
 FITBIT_CLIENT_ID = Variable.get("FITBIT_CLIENT_ID") 
 FITBIT_REFRESH_TOKEN = Variable.get("FITBIT_REFRESH_TOKEN")
 
-@dag(schedule="59 4 * * *", start_date=datetime(2024, 11, 11), catchup=False)
+@dag(schedule="59 */4 * * *", start_date=datetime(2024, 11, 11), catchup=False)
 def fitbit_data_pull():
     @task.python(task_id="refresh_access_token")
-    def refresh_access_token():        
+    def refresh_access_token():  
         url = 'https://api.fitbit.com/oauth2/token'
         payload = {
             'grant_type': 'refresh_token',
@@ -35,7 +35,7 @@ def fitbit_data_pull():
     @task.python(
         task_id="pull_raw_data"
     )
-    def pull_raw_data():
+    def pull_raw_data(**kwargs):
         authd_client = fitbit.Fitbit(
             Variable.get("FITBIT_CLIENT_ID"),
             Variable.get("FITBIT_CLIENT_SECRET"),
@@ -43,8 +43,12 @@ def fitbit_data_pull():
             refresh_token=Variable.get("FITBIT_REFRESH_TOKEN")
         )
         eastern_tz = pytz.timezone('US/Eastern')
-        eastern_time = datetime.now(eastern_tz)
-        today = eastern_time.date().strftime("%Y-%m-%d")
+        run_date = datetime.strptime(kwargs['ds'], "%Y-%m-%d") 
+
+        utc_time = pytz.utc.localize(run_date) 
+        eastern_time = utc_time.astimezone(eastern_tz) 
+
+        today = eastern_time.strftime("%Y-%m-%d")
 
         # today = date.today().strftime("%Y-%m-%d")
 
