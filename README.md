@@ -14,3 +14,9 @@ connect sleeptrack and airflow containers:
 docker network create shared_network
 docker network connect shared_network sleeptracking-postgres-1
 docker network connect shared_network airflow-airflow-worker-1
+
+If system reboots:
+
+`export AIRFLOW_UID=$(id -u)`
+
+`sudo chmod 666 /var/run/docker.sock`
